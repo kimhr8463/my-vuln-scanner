@@ -1,0 +1,33 @@
+rules:
+  - id: python-path-traversal-taint
+    languages:
+      - python
+    mode: taint
+
+    message: "User-controlled input reaches a file access operation. Potential path traversal."
+
+    severity: ERROR
+
+    metadata:
+      category: security
+      vulnerability: Path Traversal
+      cwe: "CWE-22"
+      confidence: HIGH
+      technology:
+        - python
+
+    pattern-sources:
+      - pattern: input(...)
+      - pattern: request.args.get(...)
+      - pattern: request.form.get(...)
+      - pattern: request.args[...]
+      - pattern: request.form[...]
+      - pattern: request.GET.get(...)
+      - pattern: request.POST.get(...)
+      - pattern: request.GET[...]
+      - pattern: request.POST[...]
+
+    pattern-sinks:
+      - pattern: open($PATH, ...)
+      - pattern: $PATH.open(...)
+      - pattern: os.open($PATH, ...)
