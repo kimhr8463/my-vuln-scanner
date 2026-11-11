@@ -1,0 +1,32 @@
+rules:
+  - id: python-sql-injection-taint
+    languages:
+      - python
+    mode: taint
+
+    message: "User-controlled input reaches SQL execution. Potential SQL injection."
+
+    severity: ERROR
+
+    metadata:
+      category: security
+      vulnerability: SQL Injection
+      cwe: "CWE-89"
+      confidence: HIGH
+      technology:
+        - python
+        - sqlite
+
+    pattern-sources:
+      - pattern: input(...)
+      - pattern: request.args.get(...)
+      - pattern: request.form.get(...)
+      - pattern: request.args[...]
+      - pattern: request.form[...]
+      - pattern: request.GET.get(...)
+      - pattern: request.POST.get(...)
+      - pattern: request.GET[...]
+      - pattern: request.POST[...]
+
+    pattern-sinks:
+      - pattern: $CURSOR.execute($QUERY)
