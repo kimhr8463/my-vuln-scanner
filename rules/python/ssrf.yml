@@ -1,0 +1,34 @@
+rules:
+  - id: python-ssrf-taint
+    languages:
+      - python
+    mode: taint
+
+    message: "User-controlled URL reaches an HTTP request sink. Potential SSRF."
+
+    severity: ERROR
+
+    metadata:
+      category: security
+      vulnerability: SSRF
+      cwe: "CWE-918"
+      confidence: HIGH
+      technology:
+        - python
+
+    pattern-sources:
+      - pattern: input(...)
+      - pattern: request.args.get(...)
+      - pattern: request.form.get(...)
+      - pattern: request.args[...]
+      - pattern: request.form[...]
+      - pattern: request.GET.get(...)
+      - pattern: request.POST.get(...)
+      - pattern: request.GET[...]
+      - pattern: request.POST[...]
+
+    pattern-sinks:
+      - pattern: requests.get($URL, ...)
+      - pattern: requests.post($URL, ...)
+      - pattern: requests.request($METHOD, $URL, ...)
+      - pattern: urllib.request.urlopen($URL, ...)
