@@ -1,0 +1,8 @@
+.venv/
+.git/
+__pycache__/
+reports/
+node_modules/
+vendor/
+dist/
+build/

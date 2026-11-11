@@ -1,0 +1,31 @@
+rules:
+  - id: python-command-injection-taint
+    languages:
+      - python
+    mode: taint
+
+    message: "User-controlled input reaches a dangerous command execution sink."
+
+    severity: ERROR
+
+    metadata:
+      category: security
+      vulnerability: Command Injection
+      cwe: "CWE-78"
+      confidence: HIGH
+
+    pattern-sources:
+      - pattern: input(...)
+      - pattern: request.args.get(...)
+      - pattern: request.form.get(...)
+      - pattern: request.args[...]
+      - pattern: request.form[...]
+      - pattern: request.GET.get(...)
+      - pattern: request.POST.get(...)
+
+    pattern-sinks:
+      - pattern: os.system($CMD)
+      - pattern: os.popen($CMD)
+      - pattern: subprocess.run($CMD, shell=True, ...)
+      - pattern: subprocess.call($CMD, shell=True, ...)
+      - pattern: subprocess.Popen($CMD, shell=True, ...)
