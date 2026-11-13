@@ -1,0 +1,98 @@
+rules:
+  - id: javascript-command-injection-taint
+    languages: [javascript]
+    mode: taint
+    message: "User-controlled data reaches a shell command executed by child_process."
+    severity: ERROR
+    metadata:
+      category: security
+      vulnerability: Command Injection
+      cwe: "CWE-78"
+      confidence: HIGH
+      technology: [javascript, nodejs]
+    pattern-sources:
+      - pattern: req.query.$FIELD
+      - pattern: req.query[$FIELD]
+      - pattern: req.body.$FIELD
+      - pattern: req.body[$FIELD]
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  function $FUNC(..., req, ...) {
+                    ...
+                  }
+              - pattern-inside: |
+                  const $FUNC = (..., req, ...) => {
+                    ...
+                  };
+              - pattern-inside: |
+                  $OWNER.$FUNC = (..., req, ...) => {
+                    ...
+                  };
+          - pattern: 'const {$FIELD} = req.body;'
+          - focus-metavariable: $FIELD
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  function $FUNC(..., req, ...) {
+                    ...
+                  }
+              - pattern-inside: |
+                  const $FUNC = (..., req, ...) => {
+                    ...
+                  };
+              - pattern-inside: |
+                  $OWNER.$FUNC = (..., req, ...) => {
+                    ...
+                  };
+          - pattern-inside: 'const {$FIELD: $VALUE} = req.body;'
+          - pattern: req.body
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  function $FUNC(..., req, ...) {
+                    ...
+                  }
+              - pattern-inside: |
+                  const $FUNC = (..., req, ...) => {
+                    ...
+                  };
+              - pattern-inside: |
+                  $OWNER.$FUNC = (..., req, ...) => {
+                    ...
+                  };
+          - pattern: 'const {body: {$FIELD}} = req;'
+          - focus-metavariable: $FIELD
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  function $FUNC(..., req, ...) {
+                    ...
+                  }
+              - pattern-inside: |
+                  const $FUNC = (..., req, ...) => {
+                    ...
+                  };
+              - pattern-inside: |
+                  $OWNER.$FUNC = (..., req, ...) => {
+                    ...
+                  };
+          - pattern-inside: 'const {body: {$FIELD: $VALUE}} = req;'
+          - pattern: req
+      - pattern: req.params.$FIELD
+      - pattern: req.params[$FIELD]
+      - pattern: process.argv[$INDEX]
+      - pattern: prompt(...)
+    pattern-sinks:
+      - patterns:
+          - pattern: child_process.exec($COMMAND, ...)
+          - focus-metavariable: $COMMAND
+      - patterns:
+          - pattern: child_process.execSync($COMMAND, ...)
+          - focus-metavariable: $COMMAND
+      - patterns:
+          - pattern: require('child_process').exec($COMMAND, ...)
+          - focus-metavariable: $COMMAND
+      - patterns:
+          - pattern: require('child_process').execSync($COMMAND, ...)
+          - focus-metavariable: $COMMAND

@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "kind": "new-rule-trial",
+  "target_id": "nodegoat",
+  "repository": "https://github.com/OWASP/NodeGoat",
+  "commit_sha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+  "semgrep_version": "1.185.0",
+  "new_rule_set_sha256": "d686134b3fa4264aecb21867d0a6eb129cf863cdfccad0839bb2bb78bb6bf474",
+  "prior_review_rule_set_sha256": "d3cbd3291d808b532d7f9655d4ee2a13897fd62af3a22b1c8c4dae30a40c5990",
+  "prior_review_unchanged": "validation/reviews/nodegoat/c5cb68a7084e-d3cbd3291d80.json",
+  "cli_exit_code": 2,
+  "total_findings": 1,
+  "reports": [
+    "reports/nosql-trial/nodegoat/nodegoat-scan.md",
+    "reports/nosql-trial/nodegoat/nodegoat-scan.json"
+  ],
+  "finding": {
+    "rule_id": "javascript-mongodb-dynamic-where-candidate",
+    "vulnerability": "MongoDB NoSQL Injection",
+    "cwe": "CWE-943",
+    "confidence": "MEDIUM",
+    "file_path": "app/data/allocations-dao.js",
+    "start_line": 77,
+    "end_line": 79,
+    "source_observed_by_rule": false,
+    "source_confirmed_by_prior_independent_review": "app/routes/allocations.js:21 req.query.threshold",
+    "sink": "MongoDB $where template passed through searchCriteria() to allocationsCol.find()",
+    "classification": "NEW_RULE_CANDIDATE_NOT_PRIOR_TP",
+    "evidence": "The structural rule matched dynamic $where in the DAO. Semgrep CE taint did not connect the request source in the route file to this sink. The existing independent source review separately traced the route-to-DAO call. No exploit was run."
+  }
+}

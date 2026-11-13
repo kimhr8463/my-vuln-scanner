@@ -1,0 +1,103 @@
+rules:
+  - id: javascript-sql-injection-taint
+    languages: [javascript]
+    mode: taint
+    message: "User-controlled data reaches a dynamically constructed SQL query."
+    severity: ERROR
+    metadata:
+      category: security
+      vulnerability: SQL Injection
+      cwe: "CWE-89"
+      confidence: HIGH
+      technology: [javascript, nodejs]
+    pattern-sources:
+      - pattern: req.query.$FIELD
+        label: INPUT
+      - pattern: req.query[$FIELD]
+        label: INPUT
+      - pattern: req.body.$FIELD
+        label: INPUT
+      - pattern: req.body[$FIELD]
+        label: INPUT
+      - pattern: req.params.$FIELD
+        label: INPUT
+      - pattern: req.params[$FIELD]
+        label: INPUT
+      - pattern: process.argv[$INDEX]
+        label: INPUT
+      - pattern: prompt(...)
+        label: INPUT
+      - patterns:
+          - pattern: $SQL_TEXT
+          - metavariable-regex:
+              metavariable: $SQL_TEXT
+              regex: "(?i)^[\\\"'`](?:\\s*)(?:SELECT|INSERT|UPDATE|DELETE|WITH)\\b"
+          - focus-metavariable: $SQL_TEXT
+        label: SQL_TEXT
+        exact: true
+    pattern-sinks:
+      - patterns:
+          - pattern: $DB.query($QUERY, ...)
+          - pattern-not: '$DB.query({text: $TEXT, ...}, ...)'
+          - metavariable-regex:
+              metavariable: $DB
+              regex: "(?i)^(?:db|database|client|pool|connection|conn|sequelize|knex|pgclient|pgpool|mysqlconnection|mysqlpool|sqlclient|sqlpool)$"
+          - focus-metavariable: $QUERY
+        requires: INPUT and SQL_TEXT
+      - patterns:
+          - pattern: '$DB.query({text: $QUERY, ...}, ...)'
+          - metavariable-regex:
+              metavariable: $DB
+              regex: "(?i)^(?:db|database|client|pool|connection|conn|sequelize|knex|pgclient|pgpool|mysqlconnection|mysqlpool|sqlclient|sqlpool)$"
+          - focus-metavariable: $QUERY
+        requires: INPUT and SQL_TEXT
+      - patterns:
+          - pattern: $DB.execute($QUERY, ...)
+          - metavariable-regex:
+              metavariable: $DB
+              regex: "(?i)^(?:db|database|client|pool|connection|conn|sequelize|knex|pgclient|pgpool|mysqlconnection|mysqlpool|sqlclient|sqlpool)$"
+          - focus-metavariable: $QUERY
+        requires: INPUT and SQL_TEXT
+      - patterns:
+          - pattern: $DB.raw($QUERY, ...)
+          - metavariable-regex:
+              metavariable: $DB
+              regex: "(?i)^(?:db|database|client|pool|connection|conn|sequelize|knex|pgclient|pgpool|mysqlconnection|mysqlpool|sqlclient|sqlpool)$"
+          - focus-metavariable: $QUERY
+        requires: INPUT and SQL_TEXT
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  const $DB = new pg.Pool(...);
+                  ...
+              - pattern-inside: |
+                  const $DB = new pg.Client(...);
+                  ...
+          - pattern: $DB.query($QUERY, ...)
+          - pattern-not: '$DB.query({text: $TEXT, ...}, ...)'
+          - focus-metavariable: $QUERY
+        requires: INPUT
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  const $DB = new pg.Pool(...);
+                  ...
+              - pattern-inside: |
+                  const $DB = new pg.Client(...);
+                  ...
+          - pattern: '$DB.query({text: $QUERY, ...}, ...)'
+          - focus-metavariable: $QUERY
+        requires: INPUT
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  const $DB = mysql.createConnection(...);
+                  ...
+              - pattern-inside: |
+                  const $DB = mysql.createPool(...);
+                  ...
+          - pattern-either:
+              - pattern: $DB.query($QUERY, ...)
+              - pattern: $DB.execute($QUERY, ...)
+          - focus-metavariable: $QUERY
+        requires: INPUT

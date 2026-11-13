@@ -1,0 +1,70 @@
+rules:
+  - id: javascript-mongodb-nosql-injection-taint
+    languages: [javascript]
+    mode: taint
+    message: "User-controlled input reaches a MongoDB $where expression or collection query."
+    severity: ERROR
+    metadata:
+      category: security
+      vulnerability: MongoDB NoSQL Injection
+      cwe: "CWE-943"
+      confidence: HIGH
+      technology: [javascript, nodejs, mongodb]
+    pattern-sources:
+      - pattern: req.query.$FIELD
+      - pattern: req.query[$FIELD]
+      - pattern: req.body.$FIELD
+      - pattern: req.body[$FIELD]
+      - pattern: req.params.$FIELD
+      - pattern: req.params[$FIELD]
+      - pattern: req.body
+      - pattern: req.query
+    pattern-sanitizers:
+      - pattern: Number.parseInt(...)
+      - pattern: parseInt(...)
+      - pattern: Number(...)
+    pattern-sinks:
+      - patterns:
+          - pattern: "{$where: $EXPR}"
+          - focus-metavariable: $EXPR
+      - patterns:
+          - pattern: $DB.collection(...).find($QUERY, ...)
+          - focus-metavariable: $QUERY
+      - patterns:
+          - pattern: $DB.collection(...).findOne($QUERY, ...)
+          - focus-metavariable: $QUERY
+      - patterns:
+          - pattern: $DB.collection(...).update($QUERY, ...)
+          - focus-metavariable: $QUERY
+      - patterns:
+          - pattern-inside: |
+              const $COL = $DB.collection(...);
+              ...
+          - pattern-either:
+              - pattern: $COL.find($QUERY, ...)
+              - pattern: $COL.findOne($QUERY, ...)
+              - pattern: $COL.update($QUERY, ...)
+          - focus-metavariable: $QUERY
+
+  - id: javascript-mongodb-dynamic-where-candidate
+    languages: [javascript]
+    message: "Dynamic MongoDB $where expression needs source and validation review."
+    severity: WARNING
+    metadata:
+      category: security
+      vulnerability: MongoDB NoSQL Injection
+      cwe: "CWE-943"
+      confidence: MEDIUM
+      technology: [javascript, nodejs, mongodb]
+      analysis: structural-candidate-not-confirmed-taint
+    patterns:
+      - pattern-either:
+          - pattern-inside: |
+              function $F(..., $INPUT, ...) {
+                ...
+              }
+          - pattern-inside: |
+              this.$F = (..., $INPUT, ...) => {
+                ...
+              };
+      - pattern: "{$where: `...${$INPUT}...`}"

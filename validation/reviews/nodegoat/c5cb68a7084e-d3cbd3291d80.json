@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "target_id": "nodegoat",
+  "repository": "https://github.com/OWASP/NodeGoat",
+  "commit_sha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+  "rule_set_sha256": "d3cbd3291d808b532d7f9655d4ee2a13897fd62af3a22b1c8c4dae30a40c5990",
+  "ground_truth_complete": false,
+  "findings": [],
+  "missed_findings": []
+}

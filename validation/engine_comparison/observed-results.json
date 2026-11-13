@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "semgrep_version": "1.185.0",
+  "codeql_version": "2.27.1",
+  "semgrep_engine": "OSS",
+  "seconds": {
+    "semgrep_scan": 2.479,
+    "codeql_database_create": 5.366,
+    "codeql_analyze_cold_including_compile": 108.844
+  },
+  "diagnostic": {
+    "codeql_no_barrier_findings": 7,
+    "codeql_no_barrier_safe_numeric_detected": false
+  },
+  "cases": [
+    {"case": "same_direct", "semgrep": true, "codeql": true, "sink": "same_direct.js:3"},
+    {"case": "same_intermediate", "semgrep": true, "codeql": true, "sink": "same_intermediate.js:5"},
+    {"case": "two_file", "semgrep": false, "codeql": true, "sink": "two_file/dao.js:3"},
+    {"case": "three_file", "semgrep": false, "codeql": true, "sink": "three_file/dao.js:3"},
+    {"case": "helper_argument", "semgrep": false, "codeql": true, "sink": "helper_argument.js:3"},
+    {"case": "destructured", "semgrep": true, "codeql": true, "sink": "destructured.js:4"},
+    {"case": "nested_destructured", "semgrep": true, "codeql": true, "sink": "nested_destructured.js:4"},
+    {"case": "safe_fixed", "semgrep": false, "codeql": false, "sink": "safe_fixed.js:4"},
+    {"case": "safe_numeric", "semgrep": true, "codeql": false, "sink": "safe_numeric.js:4"}
+  ]
+}

@@ -6,3 +6,7 @@ reports/*
 !reports/.gitkeep
 targets/*
 !targets/.gitkeep
+!targets/my-project/
+targets/my-project/*
+!targets/my-project/app.py
+targets/opensource/

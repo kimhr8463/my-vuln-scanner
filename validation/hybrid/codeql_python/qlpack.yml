@@ -1,0 +1,4 @@
+name: my-vuln-scanner/hybrid-python
+version: 0.1.0
+dependencies:
+  codeql/python-all: 7.2.6

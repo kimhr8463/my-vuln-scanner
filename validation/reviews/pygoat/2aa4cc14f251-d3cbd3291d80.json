@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "target_id": "pygoat",
+  "repository": "https://github.com/adeyosemanputra/pygoat",
+  "commit_sha": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+  "rule_set_sha256": "d3cbd3291d808b532d7f9655d4ee2a13897fd62af3a22b1c8c4dae30a40c5990",
+  "ground_truth_complete": false,
+  "findings": [
+    {
+      "finding_id": "f1e4aa4ce103e8e5fb20",
+      "repository": "https://github.com/adeyosemanputra/pygoat",
+      "commit_sha": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+      "rule_id": "python-command-injection-taint",
+      "vulnerability": "Command Injection",
+      "cwe": "CWE-78",
+      "file_path": "dockerized_labs/command_injection_lab/app.py",
+      "start_line": 29,
+      "end_line": 31,
+      "validation_result": "static-flow-reviewed",
+      "classification": "TP",
+      "evidence": "app.py:19 request.form.get('domain') is interpolated into command at lines 23-25, then subprocess.Popen(command, shell=True) executes it at lines 29-31. Source-to-sink confirmed by local code review; no exploit executed."
+    },
+    {
+      "finding_id": "56b0b941c5d2c5ff8254",
+      "repository": "https://github.com/adeyosemanputra/pygoat",
+      "commit_sha": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+      "rule_id": "python-sql-injection-taint",
+      "vulnerability": "SQL Injection",
+      "cwe": "CWE-89",
+      "file_path": "dockerized_labs/sql_injection_lab/app.py",
+      "start_line": 57,
+      "end_line": 57,
+      "validation_result": "static-flow-reviewed",
+      "classification": "TP",
+      "evidence": "app.py:46-52 request.form username/password are interpolated into SQL, and c.execute(sql_query) runs it at line 57. Source-to-sink confirmed by local code review; no exploit executed."
+    },
+    {
+      "finding_id": "814fa819f8896ada6f3b",
+      "repository": "https://github.com/adeyosemanputra/pygoat",
+      "commit_sha": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+      "rule_id": "python-path-traversal-taint",
+      "vulnerability": "Path Traversal",
+      "cwe": "CWE-22",
+      "file_path": "dockerized_labs/ssrf_lab/app.py",
+      "start_line": 22,
+      "end_line": 22,
+      "validation_result": "static-flow-reviewed",
+      "classification": "TP",
+      "evidence": "app.py:18 request.form.get('blog') enters os.path.join(..., file) at line 21 and open(file_path) at line 22 without path containment validation. Source-to-sink confirmed by local code review; no exploit executed."
+    },
+    {
+      "finding_id": "32c0651f2de68ea24dce",
+      "repository": "https://github.com/adeyosemanputra/pygoat",
+      "commit_sha": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+      "rule_id": "python-ssrf-taint",
+      "vulnerability": "SSRF",
+      "cwe": "CWE-918",
+      "file_path": "dockerized_labs/ssrf_lab/app.py",
+      "start_line": 37,
+      "end_line": 37,
+      "validation_result": "static-flow-reviewed",
+      "classification": "TP",
+      "evidence": "app.py:35 request.form.get('url') reaches requests.get(url) at line 37 without destination allowlisting. Source-to-sink confirmed by local code review; no external request executed."
+    }
+  ],
+  "missed_findings": []
+}

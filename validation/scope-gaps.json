@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "observations": [
+    {
+      "target_id": "nodegoat",
+      "repository": "https://github.com/OWASP/NodeGoat",
+      "commit_sha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "category": "NoSQL query injection",
+      "suggested_cwe": "CWE-943",
+      "source": "app/routes/allocations.js:21 req.query.threshold",
+      "sink": "app/data/allocations-dao.js:78 MongoDB $where template",
+      "status": "outside-current-rule-scope",
+      "evidence": "The route passes threshold to getByUserIdAndThreshold in another file, where it is interpolated into a MongoDB $where expression. The current JavaScript SQL Rule targets query/execute/raw SQL strings, so this is a candidate for a separate NoSQL and cross-file analysis effort. No exploit was executed."
+    }
+  ]
+}

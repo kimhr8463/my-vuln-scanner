@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "target_id": "nodegoat",
+  "repository": "https://github.com/OWASP/NodeGoat",
+  "commit_sha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+  "rule_set_sha256": "d3cbd3291d808b532d7f9655d4ee2a13897fd62af3a22b1c8c4dae30a40c5990",
+  "method": "Source/sink-first local static review of first-party app/routes, app/data, app/views, app/assets/js and server.js; scanner review compared after candidate inventory. Vendor JS and runtime behavior excluded.",
+  "coverage": {
+    "Command Injection": {"complete": false, "reason": "No first-party child_process exec sink seen; transitive dependencies and runtime paths not exhaustively audited."},
+    "SQL Injection": {"complete": false, "reason": "First-party DAO uses MongoDB APIs, not SQL query/execute/raw; dependencies and dynamic paths not fully audited."},
+    "Cross-Site Scripting (XSS)": {"complete": false, "reason": "DOM-write sinks in first-party JS not observed, but template, Markdown and response-body behavior need separate runtime verification."},
+    "NoSQL Injection": {"complete": false, "reason": "Outside current Rules; $where path reviewed statically but not exhaustively."},
+    "Code Execution": {"complete": false, "reason": "Outside current Rules; direct eval path reviewed statically."},
+    "SSRF": {"complete": false, "reason": "Outside current JavaScript Rules; direct needle.get path reviewed statically."},
+    "Open Redirect": {"complete": false, "reason": "Outside current Rules; direct res.redirect path reviewed statically."}
+  },
+  "candidates": [
+    {
+      "finding_id": "nodegoat-nosql-78", "repository": "https://github.com/OWASP/NodeGoat", "commit_sha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "file_path": "app/data/allocations-dao.js", "line": 78, "vulnerability": "NoSQL Injection", "cwe": "CWE-943",
+      "source": "GET /allocations/:userId req.query.threshold", "sink": "MongoDB allocationsCol.find({$where: ...})",
+      "data_flow": "The route passes threshold to getByUserIdAndThreshold; DAO interpolates it into a quoted $where JavaScript expression and passes the criterion to find.",
+      "scanner_detected": false, "classification": "OUT_OF_SCOPE",
+      "evidence": "The parseInt validation is only in a commented-out fix. Current JS SQL Rule recognizes query/execute/raw SQL sinks, not MongoDB $where. No payload was executed.",
+      "code_evidence": ["app/routes/index.js:63", "app/routes/allocations.js:16-24", "app/data/allocations-dao.js:63-86"]
+    },
+    {
+      "finding_id": "nodegoat-eval-32", "repository": "https://github.com/OWASP/NodeGoat", "commit_sha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "file_path": "app/routes/contributions.js", "line": 32, "vulnerability": "Code Execution", "cwe": "CWE-94",
+      "source": "POST /contributions req.body.preTax/afterTax/roth", "sink": "eval(req.body.preTax/afterTax/roth)",
+      "data_flow": "Three request body values are evaluated before numeric checks; the safer parseInt code is commented out.",
+      "scanner_detected": false, "classification": "OUT_OF_SCOPE",
+      "evidence": "eval executes JavaScript expressions, not a child_process shell command. The later numeric validation cannot prevent evaluation.",
+      "code_evidence": ["app/routes/index.js:51-52", "app/routes/contributions.js:29-49"]
+    },
+    {
+      "finding_id": "nodegoat-ssrf-16", "repository": "https://github.com/OWASP/NodeGoat", "commit_sha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "file_path": "app/routes/research.js", "line": 16, "vulnerability": "SSRF", "cwe": "CWE-918",
+      "source": "GET /research req.query.url and req.query.symbol", "sink": "needle.get(url)",
+      "data_flow": "Two query parameters are concatenated into a URL, then fetched by the server without destination checks.",
+      "scanner_detected": false, "classification": "OUT_OF_SCOPE",
+      "evidence": "No JavaScript SSRF Rule exists. Route /research is registered for logged-in users; no URL allowlist is present in this handler.",
+      "code_evidence": ["app/routes/index.js:76", "app/routes/research.js:12-17"]
+    },
+    {
+      "finding_id": "nodegoat-redirect-72", "repository": "https://github.com/OWASP/NodeGoat", "commit_sha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "file_path": "app/routes/index.js", "line": 72, "vulnerability": "Open Redirect", "cwe": "CWE-601",
+      "source": "GET /learn req.query.url", "sink": "res.redirect(req.query.url)",
+      "data_flow": "Authenticated route passes the supplied URL directly to Express redirect.",
+      "scanner_detected": false, "classification": "OUT_OF_SCOPE",
+      "evidence": "No redirect allowlist is visible in the route and no Open Redirect Rule exists.",
+      "code_evidence": ["app/routes/index.js:69-73"]
+    },
+    {
+      "finding_id": "nodegoat-memos-31", "repository": "https://github.com/OWASP/NodeGoat", "commit_sha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "file_path": "app/views/memos.html", "line": 31, "vulnerability": "Cross-Site Scripting (XSS)", "cwe": "CWE-79",
+      "source": "POST /memos req.body.memo", "sink": "Swig template {{ marked(doc.memo) }} with autoescape:false",
+      "data_flow": "Memo is stored in MongoDB and later passed through marked() into an HTML template; Swig autoescape is disabled.",
+      "scanner_detected": false, "classification": "UNCONFIRMED",
+      "evidence": "server.js sets marked sanitize:true; the exact pinned marked/Swig behavior and browser execution were not verified. This is server-rendered, not a DOM-write sink of the current Rule.",
+      "code_evidence": ["app/routes/memos.js:11-28", "app/data/memos-dao.js:15-32", "app/views/memos.html:29-32", "server.js:125-141"]
+    }
+  ]
+}

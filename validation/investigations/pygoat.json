@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "target_id": "pygoat",
+  "repository": "https://github.com/adeyosemanputra/pygoat",
+  "commit_sha": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+  "rule_set_sha256": "d3cbd3291d808b532d7f9655d4ee2a13897fd62af3a22b1c8c4dae30a40c5990",
+  "method": "Source/sink-first local static review of first-party HTTP handlers under dockerized_labs, challenge and introduction; scanner review compared only after candidate inventory. No exploit or external requests.",
+  "coverage": {
+    "Command Injection": {"complete": false, "reason": "Direct subprocess/shell sinks reviewed; indirect helpers and runtime conditions not exhaustively verified."},
+    "SQL Injection": {"complete": false, "reason": "Direct sqlite execute sinks reviewed; ORM and dynamically invoked query paths not exhaustively verified."},
+    "Path Traversal": {"complete": false, "reason": "Direct open sinks reviewed; template-loader path behavior and indirect file APIs require follow-up."},
+    "SSRF": {"complete": false, "reason": "Direct requests and urllib sinks reviewed; indirect network helpers and runtime settings not exhaustively verified."},
+    "Code Execution": {"complete": false, "reason": "Outside current Python command-injection Rule; eval and image-expression semantics need separate evaluation."},
+    "Unsafe Deserialization": {"complete": false, "reason": "Outside the four current Python Rules; no safe local execution attempted."}
+  },
+  "candidates": [
+    {
+      "finding_id": "f1e4aa4ce103e8e5fb20", "review_finding_id": "f1e4aa4ce103e8e5fb20",
+      "rule_id": "python-command-injection-taint",
+      "repository": "https://github.com/adeyosemanputra/pygoat", "commit_sha": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+      "file_path": "dockerized_labs/command_injection_lab/app.py", "line": 29, "vulnerability": "Command Injection", "cwe": "CWE-78",
+      "source": "POST /lab1 request.form['domain']", "sink": "subprocess.Popen(command, shell=True)",
+      "data_flow": "domain is interpolated into dig/nslookup shell command before Popen.",
+      "scanner_detected": true, "classification": "TP",
+      "evidence": "No domain validation or shell escaping; both branches execute the constructed command with shell=True.",
+      "code_evidence": ["dockerized_labs/command_injection_lab/app.py:16-30"]
+    },
+    {
+      "finding_id": "56b0b941c5d2c5ff8254", "review_finding_id": "56b0b941c5d2c5ff8254",
+      "rule_id": "python-sql-injection-taint",
+      "repository": "https://github.com/adeyosemanputra/pygoat", "commit_sha": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+      "file_path": "dockerized_labs/sql_injection_lab/app.py", "line": 57, "vulnerability": "SQL Injection", "cwe": "CWE-89",
+      "source": "POST /lab request.form username/password", "sink": "sqlite cursor.execute(sql_query)",
+      "data_flow": "username and password enter an SQL f-string, then execute without parameter binding.",
+      "scanner_detected": true, "classification": "TP",
+      "evidence": "The same file uses bound parameters for a fixed INSERT at line 25, but the login SELECT at line 50 is interpolated.",
+      "code_evidence": ["dockerized_labs/sql_injection_lab/app.py:45-57", "dockerized_labs/sql_injection_lab/app.py:25-28"]
+    },
+    {
+      "finding_id": "814fa819f8896ada6f3b", "review_finding_id": "814fa819f8896ada6f3b",
+      "rule_id": "python-path-traversal-taint",
+      "repository": "https://github.com/adeyosemanputra/pygoat", "commit_sha": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+      "file_path": "dockerized_labs/ssrf_lab/app.py", "line": 22, "vulnerability": "Path Traversal", "cwe": "CWE-22",
+      "source": "POST /lab1 request.form['blog']", "sink": "open(file_path, 'r')",
+      "data_flow": "blog is joined to the source directory, with no containment check, before open.",
+      "scanner_detected": true, "classification": "TP",
+      "evidence": "os.path.join does not reject parent components or absolute paths; the handler returns read content.",
+      "code_evidence": ["dockerized_labs/ssrf_lab/app.py:15-24"]
+    },
+    {
+      "finding_id": "32c0651f2de68ea24dce", "review_finding_id": "32c0651f2de68ea24dce",
+      "rule_id": "python-ssrf-taint",
+      "repository": "https://github.com/adeyosemanputra/pygoat", "commit_sha": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+      "file_path": "dockerized_labs/ssrf_lab/app.py", "line": 37, "vulnerability": "SSRF", "cwe": "CWE-918",
+      "source": "POST /lab2 request.form['url']", "sink": "requests.get(url)",
+      "data_flow": "url passes directly to requests.get with no destination validation.",
+      "scanner_detected": true, "classification": "TP",
+      "evidence": "The handler accepts and fetches the supplied URL; no allowlist or private-network check precedes the request.",
+      "code_evidence": ["dockerized_labs/ssrf_lab/app.py:32-39"]
+    },
+    {
+      "finding_id": "pygoat-code-eval-48", "repository": "https://github.com/adeyosemanputra/pygoat", "commit_sha": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+      "file_path": "dockerized_labs/command_injection_lab/app.py", "line": 49, "vulnerability": "Code Execution", "cwe": "CWE-94",
+      "source": "POST /lab2 request.form['val']", "sink": "eval(expression)",
+      "data_flow": "Unvalidated form expression is passed directly to Python eval.",
+      "scanner_detected": false, "classification": "OUT_OF_SCOPE",
+      "evidence": "This is Python expression evaluation, not a shell command sink covered by the current Command Injection Rule.",
+      "code_evidence": ["dockerized_labs/command_injection_lab/app.py:42-50"]
+    },
+    {
+      "finding_id": "pygoat-pickle-40", "repository": "https://github.com/adeyosemanputra/pygoat", "commit_sha": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+      "file_path": "dockerized_labs/insec_des_lab/main.py", "line": 40, "vulnerability": "Unsafe Deserialization", "cwe": "CWE-502",
+      "source": "POST /deserialize request.form['serialized_data']", "sink": "pickle.loads(decoded_data)",
+      "data_flow": "Submitted serialized data is decoded and passed to pickle.loads.",
+      "scanner_detected": false, "classification": "OUT_OF_SCOPE",
+      "evidence": "No deserialization Rule exists; static source-to-sink flow is present. No pickle payload executed.",
+      "code_evidence": ["dockerized_labs/insec_des_lab/main.py:34-42"]
+    },
+    {
+      "finding_id": "pygoat-template-111", "repository": "https://github.com/adeyosemanputra/pygoat", "commit_sha": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+      "file_path": "dockerized_labs/template_injection_lab/app.py", "line": 111, "vulnerability": "Path Traversal", "cwe": "CWE-22",
+      "source": "GET /blog/<filename> route parameter", "sink": "render_template(f'blogs/{filename}')",
+      "data_flow": "Route filename chooses a template path, but Jinja loader containment and URL routing have not been verified.",
+      "scanner_detected": false, "classification": "UNCONFIRMED",
+      "evidence": "The path is dynamic, but traversal outside the template root is not established; this is not an open() sink.",
+      "code_evidence": ["dockerized_labs/template_injection_lab/app.py:107-114"]
+    }
+  ]
+}

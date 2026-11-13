@@ -1,0 +1,30 @@
+{
+  "nodegoat_commit": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+  "command": {
+    "seconds": {"semgrep_scan": 2.976, "codeql_database_create": 5.609, "codeql_query_analyze": 101.452},
+    "cases": [
+      {"case": "same_direct", "semgrep": true, "codeql": true},
+      {"case": "same_intermediate", "semgrep": true, "codeql": true},
+      {"case": "two_file", "semgrep": false, "codeql": true},
+      {"case": "three_file", "semgrep": false, "codeql": true},
+      {"case": "helper_argument", "semgrep": false, "codeql": true},
+      {"case": "destructured", "semgrep": true, "codeql": true},
+      {"case": "nested_destructured", "semgrep": true, "codeql": true},
+      {"case": "alias_destructured", "semgrep": true, "codeql": true},
+      {"case": "safe_fixed", "semgrep": false, "codeql": false},
+      {"case": "safe_numeric", "semgrep": true, "codeql": false, "model_difference": "Semgrep uses req.query.$FIELD; CodeQL uses command only"}
+    ]
+  },
+  "nodegoat": {
+    "seconds": {"semgrep_scan": 2.504, "codeql_database_create": 6.313, "codeql_query_analyze": 52.285},
+    "semgrep_structural_candidate": "app/data/allocations-dao.js:77",
+    "codeql_cross_file_taint": "app/data/allocations-dao.js:78"
+  },
+  "nosql_controls": {
+    "seconds": {"codeql_database_create": 6.106, "codeql_query_analyze": 11.708},
+    "detected": ["vulnerable/dao.js:3"],
+    "not_detected": ["safe_fixed.js", "safe_numeric.js", "unrelated_object.js"]
+  },
+  "scanner_cli": {"findings": 1, "exit_code": 2, "formats": ["markdown", "json"]},
+  "regression_tests": {"passed": 98}
+}

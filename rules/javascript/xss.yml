@@ -1,0 +1,32 @@
+rules:
+  - id: javascript-dom-xss-taint
+    languages: [javascript]
+    mode: taint
+    message: "User-controlled data reaches an HTML-writing DOM API."
+    severity: ERROR
+    metadata:
+      category: security
+      vulnerability: Cross-Site Scripting (XSS)
+      cwe: "CWE-79"
+      confidence: HIGH
+      technology: [javascript, browser]
+    pattern-sources:
+      - pattern: location.search
+      - pattern: window.location.search
+      - pattern: location.hash
+      - pattern: window.location.hash
+      - pattern: new URLSearchParams(window.location.search).get(...)
+      - pattern: new URLSearchParams(location.search).get(...)
+      - pattern: prompt(...)
+      - pattern: req.query.$FIELD
+      - pattern: req.query[$FIELD]
+    pattern-sinks:
+      - patterns:
+          - pattern: $ELEMENT.innerHTML = $HTML
+          - focus-metavariable: $HTML
+      - patterns:
+          - pattern: $ELEMENT.outerHTML = $HTML
+          - focus-metavariable: $HTML
+      - patterns:
+          - pattern: document.write($HTML)
+          - focus-metavariable: $HTML

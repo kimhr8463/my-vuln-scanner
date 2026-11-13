@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "kind": "sql-rule-precision-trial",
+  "target_id": "nodegoat",
+  "repository": "https://github.com/OWASP/NodeGoat",
+  "commit_sha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+  "rule_set_sha256": "ea795c5378a79cd13c45489425e63cfc4fdb6e0cc108c989ac22bc1cbcb9c782",
+  "prior_nosql_trial": "validation/rule_trials/nodegoat_nosql.json",
+  "independent_review_unchanged": "validation/reviews/nodegoat/c5cb68a7084e-d3cbd3291d80.json",
+  "cli_exit_code": 2,
+  "total_findings": 1,
+  "sql_injection_findings": 0,
+  "nosql_injection_findings": 1,
+  "finding_rule_id": "javascript-mongodb-dynamic-where-candidate",
+  "finding_file": "app/data/allocations-dao.js",
+  "finding_start_line": 77,
+  "finding_end_line": 79,
+  "finding_confidence": "MEDIUM",
+  "reports": [
+    "reports/sql-precision-trial/nodegoat/nodegoat-scan.md",
+    "reports/sql-precision-trial/nodegoat/nodegoat-scan.json"
+  ],
+  "note": "This new Rule-set scan is not a reclassification of the historical independent review. The remaining NoSQL result is a structural candidate, not cross-file taint proof."
+}
